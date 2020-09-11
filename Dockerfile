@@ -19,8 +19,10 @@ RUN dos2unix run.sh
 # Application
 FROM ubuntu:latest
 
-RUN apt-get update
-RUN apt-get install -y x11vnc xvfb socat
+RUN apt-get update && apt-get install -y \
+    x11vnc \
+    xvfb \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /root
 
