@@ -1,39 +1,30 @@
-# Builder
-FROM ubuntu:latest AS builder
-
-RUN apt-get update
-RUN apt-get install -y unzip dos2unix wget
-
-WORKDIR /root
-
-RUN wget -q --progress=bar:force:noscroll --show-progress https://download2.interactivebrokers.com/installers/tws/latest-standalone/tws-latest-standalone-linux-x64.sh -O install-ib.sh
-RUN chmod a+x install-ib.sh
-
-RUN wget -q --progress=bar:force:noscroll --show-progress https://github.com/IbcAlpha/IBC/releases/download/3.8.4-beta.1/IBCLinux-3.8.4-beta.1.zip -O ibc.zip
-RUN unzip ibc.zip -d /opt/ibc
-RUN chmod a+x /opt/ibc/*.sh /opt/ibc/*/*.sh
-
-COPY run.sh run.sh
-RUN dos2unix run.sh
-
-# Application
 FROM ubuntu:latest
 
 RUN apt-get update && apt-get install -y \
+    unzip \
+    dos2unix \
+    wget \
     x11vnc \
     xvfb \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /root
 
-COPY --from=builder /root/install-ib.sh install-ib.sh
-RUN yes '' | ./install-ib.sh
+RUN wget -q --progress=bar:force:noscroll --show-progress https://download2.interactivebrokers.com/installers/tws/latest-standalone/tws-latest-standalone-linux-x64.sh -O install-ib.sh && \
+    chmod a+x install-ib.sh && \
+    yes '' | ./install-ib.sh && \
+    rm install-ib.sh
 
-RUN mkdir .vnc
-RUN x11vnc -storepasswd 1358 .vnc/passwd
+RUN wget -q --progress=bar:force:noscroll --show-progress https://github.com/IbcAlpha/IBC/releases/download/3.8.4-beta.1/IBCLinux-3.8.4-beta.1.zip -O ibc.zip && \
+    unzip ibc.zip -d /opt/ibc && \
+    chmod a+x /opt/ibc/*.sh /opt/ibc/*/*.sh && \
+    rm ibc.zip
 
-COPY --from=builder /opt/ibc /opt/ibc
-COPY --from=builder /root/run.sh run.sh
+COPY run.sh run.sh
+RUN dos2unix run.sh
+
+RUN mkdir .vnc && \
+    x11vnc -storepasswd 1358 .vnc/passwd
 
 COPY ibc_config.ini ibc/config.ini
 
