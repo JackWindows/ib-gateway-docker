@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y \
     wget \
     x11vnc \
     xvfb \
+    openjfx \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /root
